@@ -3,8 +3,7 @@
 **Live app:** https://data-visualization-and-story-telling-group-project.streamlit.app/
 
 This breaks down what's left to finish the dashboard assignment, with a proposed owner
-for each task based on who worked on that part of the EDA notebook. Reassign anything
-that doesn't fit — this is a starting point, not a mandate.
+for each task based on who worked on that part of the EDA notebook.
 
 ---
 
