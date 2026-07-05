@@ -29,7 +29,7 @@ that doesn't fit — this is a starting point, not a mandate.
 
 | Task | Suggested owner | Why |
 |---|---|---|
-| Add a county-level choropleth map as a third coordinated view | **Mariah** | Her EDA section already built "Chart 6: Choropleth Map" for emissions — closest starting point |
+| Add a county-level choropleth map as a third coordinated view | **Mariah** | Already built "Chart 6: Choropleth Map" for emissions — closest starting point |
 | Review/extend the `EMISSIONS` variable options and labels in `VARIABLE_GROUPS` | **Mariah** | Owned emissions charts (histograms, top-15 states, per-capita) in the EDA |
 | Add a minimum sample-size guard so the state bar chart doesn't show noisy means from 1–2 brushed counties | **Michelle** | Did the missingness/coverage analysis, most familiar with where data is sparse |
 | Review/extend the `SES` variable options and labels; add plain-language descriptions for each SES variable | **Michelle** | Owned the SES missingness and definitions section |
