@@ -154,7 +154,7 @@ if selected_states:
 # ----------------------------------------------------------------------------
 # Main layout
 # ----------------------------------------------------------------------------
-st.title("Environmental & Community Health Explorer")
+st.title("🌎 Environmental & Community Health Explorer")
 st.write(
     "Explore how socioeconomic conditions, air quality, greenhouse gas emissions, "
     "and health outcomes relate to one another across U.S. counties (2023 data)."
