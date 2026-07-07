@@ -356,14 +356,6 @@ st.altair_chart(
     use_container_width=False
 )
 
-with st.expander("View underlying data"):
-    st.dataframe(
-        df_s1[["county_name", "state_abbr", "census_region",
-               "log_emissions_per_capita", outcome_col_1]]
-        .sort_values(outcome_col_1, ascending=False),
-        use_container_width=True,
-    )
-
 # ─────────────────────────────────────────────────────────────────────────────
 # SECTION 2: Correlation bar chart (full national dataset, no filter)
 # ─────────────────────────────────────────────────────────────────────────────
