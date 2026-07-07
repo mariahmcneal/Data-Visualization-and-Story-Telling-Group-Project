@@ -255,7 +255,7 @@ st.write(
     "emissions favor states with more industry and more people, while per-capita "
     "emissions represents a different set of states carrying an outsized burden "
     "relative to their population. Each bubble is a state; size and color both "
-    "track per-capita emissions. The larger the bubble and the more intense the color, 
+    "track per-capita emissions. The larger the bubble and the more intense the color, "
     "the more per-capita emissions. Hover over each bubble to see a state's total and per-capita emissions"
 )
 
