@@ -3,7 +3,7 @@ from data_utils import load_data, VARIABLE_GROUPS
 
 df = load_data()
 
-st.title("🌎 Environmental & Community Health Explorer")
+st.title("Environmental & Community Health Explorer")
 
 st.write(
     "This dashboard explores how socioeconomic conditions, air quality, greenhouse gas "
@@ -19,30 +19,26 @@ col3.metric("Data categories", len(VARIABLE_GROUPS))
 st.markdown("---")
 st.markdown("### How this dashboard is organized")
 st.write(
-    "Use the navigation sidebar on the left to move between topic pages. Each page was "
-    "built by the teammate who explored that topic in our original exploratory data "
-    "analysis (EDA), and each lets you pick any two variables to compare, brush-select "
-    "counties on the scatter plot, and see a linked bar chart update in real time."
+    "Use the navigation sidebar on the left to move between topic pages. Each page focuses "
+    "on one topic and is built around interactive charts. Hover for details and use the sidebar "
+    "controls on each page to change what's shown. "
 )
 
 c1, c2, c3 = st.columns(3)
 with c1:
-    st.markdown("#### 🏭 Emissions")
-    st.caption("Owner: Mariah")
+    st.markdown("#### Emissions")
     st.write(
         "Greenhouse gas emissions by county — total emissions, per-capita emissions, "
         "gas type breakdown, and which states report the most."
     )
 with c2:
-    st.markdown("#### 🏘️ Socioeconomic")
-    st.caption("Owner: Michelle")
+    st.markdown("#### Socioeconomic")
     st.write(
         "Socioeconomic hardship indicators — food and housing insecurity, insurance "
         "access, and data coverage across states."
     )
 with c3:
-    st.markdown("#### ❤️ Health & Pollution")
-    st.caption("Owner: Dalis")
+    st.markdown("#### Health & Pollution")
     st.write(
         "Health outcome prevalence — respiratory and mental health conditions — and how "
         "they relate to air pollution exposure."
