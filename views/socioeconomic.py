@@ -258,7 +258,7 @@ elif env_event.selection:
 
 
 if selection:
-    selected_fips = selection["county_fips_int"][0]
+    st.write(selection)
 
     county = df[
         df["county_fips_int"] == selected_fips
