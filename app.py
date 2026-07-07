@@ -15,9 +15,9 @@ st.set_page_config(
 )
 
 home = st.Page("views/home.py", title="Overview", icon="🏠", default=True)
-emissions_page = st.Page("views/emissions.py", title="Emissions (Mariah)", icon="🏭")
-ses_page = st.Page("views/socioeconomic.py", title="Socioeconomic (Michelle)", icon="🏘️")
-health_page = st.Page("views/health.py", title="Health & Pollution (Dalis)", icon="❤️")
+emissions_page = st.Page("views/emissions.py", title="Emissions", icon="🏭")
+ses_page = st.Page("views/socioeconomic.py", title="Socioeconomic", icon="🏘️")
+health_page = st.Page("views/health.py", title="Health & Pollution", icon="❤️")
 
 pg = st.navigation([home, emissions_page, ses_page, health_page])
 pg.run()
