@@ -22,7 +22,7 @@ df = load_socioeconomic_data()
 df = df.sort_values(["state_abbr", "county_name"])
 
 df["county_display"] = (
-    df["county_name"] + ", " + df["state_abbr"]
+    df["county_name"] + "County, " + df["state_abbr"]
 )
 
 df["county_fips_int"] = (
@@ -48,7 +48,15 @@ st.markdown(
     """
 )
 
-
+st.info(
+    """
+    **Note:** Values are Z-scores which standardize measures so counties can 
+    be compared on the same scale. A z-score of 0 represents the national average. 
+    Positive values indicate counties with higher-than-average values for the 
+    selected measure, while negative values indicate lower-than-average values.
+    
+    """
+)
 # -----------------------------
 # Sidebar dropdowns
 # -----------------------------
@@ -81,7 +89,6 @@ county_selection = alt.selection_point(
     empty=False
 )
 
-
 with st.sidebar:
     st.header("Explore Variables")
 
@@ -101,7 +108,8 @@ with st.sidebar:
 
     selected_state = st.selectbox(
         "Select State",
-        options=sorted(df["state_abbr"].unique())
+        options=states,
+        index=states.index("MA") if "MA" in states else 0
     )
 
     county_options = (
@@ -110,9 +118,14 @@ with st.sidebar:
     )
 
     selected_county = st.selectbox(
-        "Select County",
-        options=county_options["county_display"]
-    )
+        "Select County:",
+        options=county_options["county_display"],
+        index=(
+            list(county_options["county_display"]).index("Suffolk County, MA")
+            if "Suffolk County, MA" in list(county_options["county_display"])
+            else 0
+        )
+    )     
 # -----------------------------
 # SES MAP
 # -----------------------------
@@ -263,21 +276,24 @@ st.subheader("Selected County Profile")
 col1, col2, col3 = st.columns(3)
 
 col1.metric(
-    "County",
+    "Selected County",
     selected_county
 )
 
 col2.metric(
-    SES_labels[selected_ses],
+    f"{SES_labels[selected_ses]} (z-score)",
     f"{selected_row[selected_ses]:.2f}"
 )
 
 col3.metric(
-    ENV_labels[selected_env],
+    f"{ENV_labels[selected_env]} (z-score)",
     f"{selected_row[selected_env]:.2f}"
 )
 
 # Display maps and capture selections
+st.caption(
+    "Map colors represent relative county values compared with all U.S. counties."
+)
 
 ses_event = st.altair_chart(
     ses_map,
