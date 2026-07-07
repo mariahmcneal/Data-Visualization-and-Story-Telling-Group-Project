@@ -356,5 +356,5 @@ col3.metric(
     f"{ENV_labels[selected_env]} (z-score)",
     "Not reported" if pd.isna(value) else f"{value:.2f}"
 )
-)
+
 
