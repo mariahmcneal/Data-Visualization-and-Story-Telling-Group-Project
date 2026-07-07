@@ -50,7 +50,7 @@ st.write(
     "**Sources:** EPA Greenhouse Gas Reporting Program (2023), EPA Air Quality Index by "
     "CBSA (2023), CDC PLACES County Data (2025 release), and Census core-based statistical "
     "area definitions — merged to the county level.\n\n"
-    "**Note on missing data:** air quality monitoring only covers roughly 500 counties, "
+    "**Note on missing data:** air quality monitoring only covers roughly 1300 counties, "
     "and GHG emissions reporting is sparser in rural counties. Variable pairs that mix "
     "categories can end up with a smaller sample than a single-category view — each page "
     "shows how many counties are currently plotted."
