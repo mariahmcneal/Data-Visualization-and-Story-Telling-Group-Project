@@ -13,8 +13,9 @@ from data_utils import (
 
 @st.cache_data
 def load_data():
-df = pd.read_csv("eda_env_health_2023.csv")
-
+    df = pd.read_csv("eda_env_health_2023.csv")
+    return df
+    
 df = load_data()
 
 st.title("🏘️ Environmental Burden and Socioeconomic Status (SES)")
