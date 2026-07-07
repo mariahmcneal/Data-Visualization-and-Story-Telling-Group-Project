@@ -128,13 +128,7 @@ with st.sidebar:
             else 0
         )
     )  
-    burden_threshold = st.slider(
-        "Highlight counties with SES Indicator z-score above:",
-        min_value=-2.0,
-        max_value=3.0,
-        value=1.0,
-        step=0.1
-    )
+    
       
 # -----------------------------
 # SES MAP
@@ -143,12 +137,6 @@ selected_row = df[
     df["county_display"] == selected_county
 ].iloc[0]
 
-df["highlight"] = (
-    (df[selected_ses] >= burden_threshold) &
-    (df[selected_env] >= burden_threshold)
-)
-
-highlighted_counties = df[df["highlight"]]
 
 ses_map = (
     alt.Chart(counties)
@@ -168,8 +156,7 @@ ses_map = (
                 "state_abbr",
                 selected_ses,
                 "FOODINSECU",
-                "HOUSINSECU",
-                "highlight"
+                "HOUSINSECU"
             ]
         )
     )
@@ -192,17 +179,6 @@ ses_map = (
             )
         ),
         
-        stroke=alt.condition(
-            "datum.highlight == true",
-            alt.value("black"),
-            alt.value("white")
-        ),
-        
-        strokeWidth=alt.condition(
-            "datum.highlight == true",
-            alt.value(1.5),
-            alt.value(0.1)
-        ),
 
         tooltip=[
             alt.Tooltip("county_name:N", title="County"),
@@ -325,10 +301,6 @@ st.caption(
     "Map colors represent relative county values compared with all U.S. counties."
 )
 
-st.caption(
-    f"{len(highlighted_counties)} counties have a "
-    f"{SES_labels[selected_ses]} z-score above {burden_threshold:.1f}."
-)
 
 ses_event = st.altair_chart(
     ses_map,
