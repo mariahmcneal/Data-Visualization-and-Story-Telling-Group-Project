@@ -226,12 +226,12 @@ if len(plot_df) > 2:
     c2.metric("Correlation (r)", f"{corr:.2f}")
 
 st.caption(
-    "ℹ️ **What is r?** Correlation (r) measures how closely two variables move "
+    "Correlation (r) measures how closely two variables move "
     "together, on a scale from **-1** to **+1**. A value near **+1** means that as "
     "one variable goes up, the other tends to go up too. A value near **-1** means "
     "one tends to go up as the other goes down. A value near **0** means there's "
-    "little to no straight-line relationship between them. Correlation only "
-    "describes the pattern — it doesn't prove that one variable *causes* the other."
+    "little to no straight-line relationship between them. Correlation does not "
+    "prove that one variable *causes* the other, it only describes the relationship between the variables."
 )
 
 st.altair_chart(
