@@ -19,6 +19,12 @@ def load_socioeconomic_data():
 
 df = load_socioeconomic_data()
 
+df = df.sort_values(["state_abbr", "county_name"])
+
+df["county_display"] = (
+    df["county_name"] + ", " + df["state_abbr"]
+)
+
 df["county_fips_int"] = (
     df["county_fips_int"]
     .astype(str)
@@ -92,9 +98,27 @@ with st.sidebar:
         format_func=lambda x: ENV_labels[x],
         index=0
     )
-  # -----------------------------
+
+    selected_state = st.selectbox(
+        "Select State",
+        options=sorted(df["state_abbr"].unique())
+    )
+
+    county_options = (
+        df[df["state_abbr"] == selected_state]
+        .sort_values("county_name")
+    )
+
+    selected_county = st.selectbox(
+        "Select County",
+        options=county_options["county_display"]
+    )
+# -----------------------------
 # SES MAP
 # -----------------------------
+selected_row = df[
+    df["county_display"] == selected_county
+].iloc[0]
 
 ses_map = (
     alt.Chart(counties)
@@ -231,6 +255,28 @@ env_map = (
 
     .project(type="albersUsa")
 )
+
+st.divider()
+
+st.subheader("Selected County Profile")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric(
+    "County",
+    selected_county
+)
+
+col2.metric(
+    SES_labels[selected_ses],
+    f"{selected_row[selected_ses]:.2f}"
+)
+
+col3.metric(
+    ENV_labels[selected_env],
+    f"{selected_row[selected_env]:.2f}"
+)
+
 # Display maps and capture selections
 
 ses_event = st.altair_chart(
@@ -244,41 +290,3 @@ env_event = st.altair_chart(
     use_container_width=True,
     on_select="rerun"
 )
-
-
-# Dynamic tile
-
-selection = None
-
-if ses_event.selection:
-    selection = ses_event.selection
-
-elif env_event.selection:
-    selection = env_event.selection
-
-
-if selection:
-    st.write(selection)
-
-    county = df[
-        df["county_fips_int"] == selected_fips
-    ].iloc[0]
-
-    st.subheader("Selected County")
-
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric(
-        "County",
-        f"{county['county_name']}, {county['state_abbr']}"
-    )
-
-    col2.metric(
-        SES_labels[selected_ses],
-        f"{county[selected_ses]:.2f}"
-    )
-
-    col3.metric(
-        ENV_labels[selected_env],
-        f"{county[selected_env]:.2f}"
-    )
