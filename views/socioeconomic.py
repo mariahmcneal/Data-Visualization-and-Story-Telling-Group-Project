@@ -25,11 +25,14 @@ df["county_fips_int"] = (
     .str.zfill(5)
 )
 
-counties = alt.topo_feature(
-    US_COUNTIES_TOPOJSON_URL,
-    "counties"
-)
+@st.cache_data
+def load_county_map():
+    return alt.topo_feature(
+        US_COUNTIES_TOPOJSON_URL,
+        "counties"
+    )
 
+counties = load_county_map()
 st.title("🏘️ Environmental Burden and Socioeconomic Status (SES)")
 st.caption("Owner: Michelle Webber")
 
@@ -55,27 +58,31 @@ SES_labels = {
 }
 
 ENV_labels = {
+    "pct_unhealthy_days_z": "% Unhealthy Air Quality Days",
+    "Max AQI_z": "Maximum AQI",
+    "90th Percentile AQI_z": "High AQI (90th Percentile)",
+    "Median AQI_z": "Median AQI",
     "total_emissions_z": "Total Emissions",
     "co2_emissions_z": "CO₂ Emissions",
-    "ch4_emissions_z": "CH₄ Emissions",
-    "n2o_emissions_z": "N₂O Emissions",
-    "emissions_per_capita_z": "Emissions per Capita",
-    "Unhealthy Days_z": "Unhealthy Air Days"
+    "ch4_emissions_z": "Methane Emissions",
+    "n2o_emissions_z": "Nitrous Oxide Emissions",
+    "num_facilities_z": "Number of Emitting Facilities",
+    "emissions_per_capita_z": "Emissions per Capita"
 }
 
 
 with st.sidebar:
-    st.header("Map Controls")
+    st.header("Explore Variables")
 
     selected_ses = st.selectbox(
-        "Select SES Measure",
+        "Select SES Measure:",
         options=list(SES_labels.keys()),
         format_func=lambda x: SES_labels[x],
         index=list(SES_labels.keys()).index("HOUSINSECU_z")
     )
 
     selected_env = st.selectbox(
-        "Select Environmental Measure",
+        "Select Environmental Measure:",
         options=list(ENV_labels.keys()),
         format_func=lambda x: ENV_labels[x],
         index=0
@@ -214,6 +221,11 @@ env_map = (
     .project(type="albersUsa")
 )
 st.altair_chart(
-    env_map | ses_map,
+    ses_map,
+    use_container_width=True
+)
+
+st.altair_chart(
+    env_map,
     use_container_width=True
 )
