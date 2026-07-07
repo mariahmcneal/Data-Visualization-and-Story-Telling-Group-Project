@@ -70,6 +70,11 @@ ENV_labels = {
     "emissions_per_capita_z": "Emissions per Capita"
 }
 
+county_selection = alt.selection_point(
+    fields=["county_fips_int"],
+    empty=False
+)
+
 
 with st.sidebar:
     st.header("Explore Variables")
@@ -104,6 +109,7 @@ ses_map = (
             df,
             "county_fips_int",
             [
+                "county_fips_int",
                 "county_name",
                 "state_abbr",
                 selected_ses,
@@ -116,6 +122,8 @@ ses_map = (
     .transform_calculate(
         SES_value=f"datum['{selected_ses}']"
     )
+
+    .add_params(county_selection)
 
     .encode(
 
@@ -171,6 +179,7 @@ env_map = (
             df,
             "county_fips_int",
             [
+                "county_fips_int",
                 "county_name",
                 "state_abbr",
                 selected_env,
@@ -183,6 +192,8 @@ env_map = (
     .transform_calculate(
         ENV_value=f"datum['{selected_env}']"
     )
+
+    .add_params(county_selection)
 
     .encode(
 
@@ -220,12 +231,43 @@ env_map = (
 
     .project(type="albersUsa")
 )
+
+#Dynamic tile
+
+if selection.selection:
+    selected_fips = selection.selection["county_fips_int"][0]
+
+    county = df[
+        df["county_fips_int"] == selected_fips
+    ].iloc[0]
+
+    st.subheader("Selected County")
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric(
+        "County",
+        f"{county['county_name']}, {county['state_abbr']}"
+    )
+
+    col2.metric(
+        SES_labels[selected_ses],
+        f"{county[selected_ses]:.2f}"
+    )
+
+    col3.metric(
+        ENV_labels[selected_env],
+        f"{county[selected_env]:.2f}"
+    )
+
 st.altair_chart(
     ses_map,
-    use_container_width=True
+    use_container_width=True,
+     on_select="rerun"
 )
 
 st.altair_chart(
     env_map,
-    use_container_width=True
+    use_container_width=True,
+     on_select="rerun"
 )
