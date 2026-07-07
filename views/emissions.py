@@ -170,7 +170,7 @@ m3.metric("Reporting facilities", f"{int(df['num_facilities'].sum(skipna=True)):
 # 2. THE MAP — where is it concentrated?
 # ----------------------------------------------------------------------------
 st.markdown("---")
-st.markdown("### 🗺️ Where the emissions are")
+st.markdown("### Reported Emissions Across the USA")
 st.write(
     "Hover over any state to see its total reported emissions. A handful of "
     "industrial and energy-producing states account for a disproportionate share."
@@ -199,15 +199,14 @@ st.altair_chart(
 # 3. THE ZOOM-IN — the core research question
 # ----------------------------------------------------------------------------
 st.markdown("---")
-st.markdown("### 🔬 Are high-emissions counties also higher-pollution counties?")
+st.markdown("### Are high-emissions counties also higher-pollution counties?")
 st.write(
-    "The map shows *where* the emissions are. Here we test the actual question: pick "
-    "an emissions measure and an air quality measure, then **drag a box on the "
-    "scatter plot** to select a cluster of counties and see how their air quality "
+    "Pick an emissions measure and an air quality measure, then drag a box on the "
+    "scatter plot to select a cluster of counties and see how their air quality "
     "compares state by state."
 )
 
-st.sidebar.header("🔥 Emissions story controls")
+st.sidebar.header("Emissions View Controls")
 x_label = st.sidebar.selectbox("Emissions variable (X-axis)", list(EMISSIONS_VARS.keys()))
 x_col = EMISSIONS_VARS[x_label]
 
@@ -230,7 +229,7 @@ st.altair_chart(
     use_container_width=False,
 )
 st.caption(
-    "Drag a rectangle on the scatter plot to brush-select a group of counties — the "
+    "Drag a rectangle on the scatter plot to brush-select a group of counties. The "
     "bar chart recalculates the state averages using only that selection. Note that "
     "AQI monitoring only covers roughly 500 U.S. counties, so this comparison uses a "
     "smaller sample than the map above."
@@ -240,13 +239,13 @@ st.caption(
 # 4. SUPPORTING CONTEXT — who carries the biggest burden?
 # ----------------------------------------------------------------------------
 st.markdown("---")
-st.markdown("### ⚖️ Context: total emissions vs. per-capita emissions")
+st.markdown("### Context: total emissions vs. per-capita emissions")
 st.write(
-    "One reason emissions and air quality don't always line up perfectly: total "
+    "One reason emissions and air quality don't always line up perfectly is because total "
     "emissions favor states with more industry and more people, while per-capita "
-    "emissions surface a different set of states carrying an outsized burden "
+    "emissions represents a different set of states carrying an outsized burden "
     "relative to their population. Each bubble is a state; size and color both "
-    "track per-capita emissions."
+    "track per-capita emissions. Hover over each bubble to see a state's total and per-capita emissions"
 )
 
 state_summary = (
@@ -278,23 +277,6 @@ bubble = (
 )
 st.altair_chart(bubble, use_container_width=False)
 
-# ----------------------------------------------------------------------------
-# 5. THE TAKEAWAY
-# ----------------------------------------------------------------------------
-st.markdown("---")
-st.markdown(
-    f"""
-    <div style="background: linear-gradient(135deg, {FLAME_1}22, {FLAME_3}22);
-                border-left: 5px solid {FLAME_3}; border-radius: 6px; padding: 14px 18px;">
-    <strong>Takeaway:</strong> Emissions are concentrated in a small number of states,
-    but whether that concentration translates into worse air quality on the ground is
-    a county-level question, not a state-level one — use the scatter plot above to
-    check the correlation for the emissions and air quality measures you care about,
-    and brush-select any cluster of counties to see how their air quality compares.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
 
 with st.expander("View underlying data (filtered)"):
     st.dataframe(
