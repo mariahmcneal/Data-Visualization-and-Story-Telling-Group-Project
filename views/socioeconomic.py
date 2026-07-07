@@ -1,6 +1,7 @@
 import altair as alt
 import pandas as pd
 import streamlit as st
+from vega_datasets import data
 
 from data_utils import (
     SES_VARS,
@@ -37,7 +38,7 @@ st.markdown(
 # Sidebar dropdowns
 # -----------------------------
 counties = alt.topo_feature(
-    alt.topo_data.us_10m.url,
+    data.us_10m.url,
     "counties"
 )
 
