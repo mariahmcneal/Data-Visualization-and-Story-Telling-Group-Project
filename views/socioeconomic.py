@@ -11,84 +11,196 @@ from data_utils import (
     COLOR_BAR,
 )
 
-st.title("🏘️ Socioeconomic (SES)")
-st.caption("Owner: Michelle — based on the SES / missingness analysis from our EDA notebook")
+@st.cache_data
+def load_data():
+df = pd.read_csv("eda_env_health_2023.csv")
 
 df = load_data()
 
-st.write(
-    "Explore socioeconomic hardship indicators by county — food and housing insecurity, "
-    "insurance access, and more — and how they relate to air quality, emissions, or "
-    "health outcomes."
+st.title("🏘️ Environmental Burden and Socioeconomic Status (SES)")
+st.caption("Owner: Michelle Webber")
+
+st.markdown(
+    """
+    Environmental burdens are not experienced equally across communities. This dashboard explores environmental justice patterns across U.S. counties by examining how **socioeconomic conditions**, **air quality**, and **greenhouse gas emissions** vary geographically. Interactive visualizations highlight where environmental exposures and social vulnerabilities overlap, providing insight into communities that may face disproportionate environmental challenges.
+    """
 )
 
-# --- Sidebar controls (UI interaction) ---------------------------------------
-st.sidebar.header("Socioeconomic view controls")
 
-x_label = st.sidebar.selectbox("SES variable (X-axis)", list(SES_VARS.keys()))
-x_col = SES_VARS[x_label]
+# -----------------------------
+# Sidebar dropdowns
+# -----------------------------
 
-other_groups = {k: v for k, v in VARIABLE_GROUPS.items() if k != "Socioeconomic (SES)"}
-y_group = st.sidebar.selectbox("Compare against category (Y-axis)", list(other_groups.keys()))
-y_label = st.sidebar.selectbox("Y-axis variable", list(other_groups[y_group].keys()))
-y_col = other_groups[y_group][y_label]
+SES_labels = {
+    "FOODINSECU_z": "Food Insecurity",
+    "HOUSINSECU_z": "Housing Insecurity",
+    "FOODSTAMP_z": "Food Assistance Reliance",
+    "ACCESS2_z": "Healthcare Access Barriers",
+    "SHUTUTILITY_z": "Utility Shutoff Risk",
+    "LACKTRPT_z": "Transportation Barriers",
+    "EMOTIONSPT_z": "Emotional Support Barriers"
+}
 
-selected_states = state_filter(st.sidebar, df, key="ses_states")
+ENV_labels = {
+    "total_emissions_z": "Total Emissions",
+    "co2_emissions_z": "CO₂ Emissions",
+    "ch4_emissions_z": "CH₄ Emissions",
+    "n2o_emissions_z": "N₂O Emissions",
+    "emissions_per_capita_z": "Emissions per Capita",
+    "Unhealthy Days_z": "Unhealthy Air Days"
+}
 
-# --- Filter data ---------------------------------------------------------------
-plot_df = df.dropna(subset=[x_col, y_col, "state_abbr"]).copy()
-if selected_states:
-    plot_df = plot_df[plot_df["state_abbr"].isin(selected_states)]
 
-m1, m2 = st.columns(2)
-m1.metric("Counties shown", f"{len(plot_df):,}")
-if len(plot_df) > 2:
-    m2.metric("Correlation (r)", f"{plot_df[x_col].corr(plot_df[y_col]):.2f}")
+with st.sidebar:
+    st.header("Map Controls")
 
-st.markdown("### Coordinated view: brush-select counties, see the state comparison update")
-st.altair_chart(
-    linked_scatter_bar(plot_df, x_col, x_label, y_col, y_label),
-    use_container_width=False,
-)
-st.caption(
-    "Drag a rectangle on the scatter plot to select a group of counties — the bar chart "
-    "recalculates using only that selection."
-)
+    selected_ses = st.selectbox(
+        "Select SES Measure",
+        options=list(SES_labels.keys()),
+        format_func=lambda x: SES_labels[x],
+        index=list(SES_labels.keys()).index("HOUSINSECU_z")
+    )
 
-# --- Topic-specific chart: SES data coverage by state (from the EDA notebook) ---
-st.markdown("---")
-st.markdown("### SES data coverage by state")
-st.caption(
-    "Reflects how completely each state's counties report socioeconomic indicators — "
-    "coverage varies systematically, so SES comparisons are conditional on reporting."
-)
+    selected_env = st.selectbox(
+        "Select Environmental Measure",
+        options=list(ENV_labels.keys()),
+        format_func=lambda x: ENV_labels[x],
+        index=0
+    )
+  # -----------------------------
+# SES MAP
+# -----------------------------
 
-ses_cols = list(SES_VARS.values())
-coverage = df.copy()
-coverage["ses_pct_complete"] = coverage[ses_cols].notna().mean(axis=1) * 100
-state_coverage = (
-    coverage.groupby("state_abbr", as_index=False)["ses_pct_complete"]
-    .mean()
-    .sort_values("ses_pct_complete", ascending=False)
-)
+ses_map = (
+    alt.Chart(counties)
+    .mark_geoshape(
+        stroke="white",
+        strokeWidth=0.1
+    )
 
-coverage_chart = (
-    alt.Chart(state_coverage)
-    .mark_bar(color=COLOR_BAR)
+    .transform_lookup(
+        lookup="id",
+        from_=alt.LookupData(
+            df,
+            "county_fips_int",
+            [
+                "county_name",
+                "state_abbr",
+                selected_ses,
+                "FOODINSECU",
+                "HOUSINSECU"
+            ]
+        )
+    )
+
+    .transform_calculate(
+        SES_value=f"datum['{selected_ses}']"
+    )
+
     .encode(
-        x=alt.X("ses_pct_complete:Q", title="Avg. % SES fields complete"),
-        y=alt.Y("state_abbr:N", sort="-x", title="State"),
-        tooltip=[
-            alt.Tooltip("state_abbr:N", title="State"),
-            alt.Tooltip("ses_pct_complete:Q", title="% complete", format=".1f"),
-        ],
-    )
-    .properties(width=780, height=780)
-)
-st.altair_chart(coverage_chart, use_container_width=False)
 
-with st.expander("View underlying data (filtered)"):
-    st.dataframe(
-        plot_df[["county_name", "state_abbr", x_col, y_col]].sort_values(x_col, ascending=False),
-        use_container_width=True,
+        color=alt.Color(
+            "SES_value:Q",
+            title="SES z-score",
+            scale=alt.Scale(
+                scheme="redyellowgreen",
+                domain=[-2,2],
+                reverse=True
+            )
+        ),
+
+        tooltip=[
+            alt.Tooltip("county_name:N", title="County"),
+            alt.Tooltip("state_abbr:N", title="State"),
+            alt.Tooltip(
+                "SES_value:Q",
+                title="SES z-score",
+                format=".2f"
+            ),
+            alt.Tooltip(
+                "HOUSINSECU:Q",
+                title="Housing insecurity (%)",
+                format=".1f"
+            ),
+            alt.Tooltip(
+                "FOODINSECU:Q",
+                title="Food insecurity (%)",
+                format=".1f"
+            )
+        ]
     )
+
+    .properties(
+        width=450,
+        height=500,
+        title=f"Socioeconomic Vulnerability: {SES_labels[selected_ses]}"
+    )
+
+    .project(type="albersUsa")
+)
+env_map = (
+    alt.Chart(counties)
+    .mark_geoshape(
+        stroke="white",
+        strokeWidth=0.1
+    )
+
+    .transform_lookup(
+        lookup="id",
+        from_=alt.LookupData(
+            df,
+            "county_fips_int",
+            [
+                "county_name",
+                "state_abbr",
+                selected_env,
+                "pct_unhealthy_days",
+                "num_facilities"
+            ]
+        )
+    )
+
+    .transform_calculate(
+        ENV_value=f"datum['{selected_env}']"
+    )
+
+    .encode(
+
+        color=alt.Color(
+            "ENV_value:Q",
+            title="Environmental z-score",
+            scale=alt.Scale(
+                scheme="redyellowgreen",
+                domain=[-2,2],
+                reverse=True
+            )
+        ),
+
+        tooltip=[
+            alt.Tooltip("county_name:N", title="County"),
+            alt.Tooltip("state_abbr:N", title="State"),
+            alt.Tooltip(
+                "ENV_value:Q",
+                title="Environmental z-score",
+                format=".2f"
+            ),
+            alt.Tooltip(
+                "num_facilities:Q",
+                title="Facilities",
+                format=".0f"
+            )
+        ]
+    )
+
+    .properties(
+        width=450,
+        height=500,
+        title=f"Environmental Burden: {ENV_labels[selected_env]}"
+    )
+
+    .project(type="albersUsa")
+)
+st.altair_chart(
+    env_map | ses_map,
+    use_container_width=True
+)
