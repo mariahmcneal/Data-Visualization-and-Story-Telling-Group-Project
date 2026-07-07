@@ -147,7 +147,7 @@ st.markdown(
     "concentrations of air pollutants that pose risks to human health?**\n\n"
     "Every year, industrial facilities across the U.S. report their greenhouse gas "
     "emissions to the EPA. Some states carry a larger share of the load than "
-    "others. This page explores where the emissions are concentrated, and whether 
+    "others. This page explores where the emissions are concentrated, and whether "
     "counties with more emissions experience worse air quality."
 )
 
