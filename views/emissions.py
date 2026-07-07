@@ -141,15 +141,14 @@ df = load_data()
 # ----------------------------------------------------------------------------
 # 1. THE HOOK
 # ----------------------------------------------------------------------------
-st.title("🔥 Do Emissions Foul the Air? Tracing GHGs to Air Quality")
+st.title("Tracing GHGs to Air Quality")
 st.markdown(
     "**Are regions with higher greenhouse gas emissions also associated with higher "
     "concentrations of air pollutants that pose risks to human health?**\n\n"
     "Every year, industrial facilities across the U.S. report their greenhouse gas "
-    "emissions to the EPA. Some states carry a far bigger share of the load than "
-    "others. This page follows that thread through to air quality: **where the "
-    "emissions are concentrated, and whether counties with more emissions actually "
-    "experience worse air quality.**"
+    "emissions to the EPA. Some states carry a larger share of the load than "
+    "others. This page explores where the emissions are concentrated, and whether 
+    "counties with more emissions experience worse air quality."
 )
 
 total_all = df["total_emissions"].sum()
