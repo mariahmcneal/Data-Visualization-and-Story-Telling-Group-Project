@@ -13,7 +13,7 @@ st.write(
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Counties in dataset", f"{len(df):,}")
-col2.metric("States represented", df["state_abbr"].nunique())
+col2.metric("States represented", 52)
 col3.metric("Data categories", len(VARIABLE_GROUPS))
 
 st.markdown("---")
