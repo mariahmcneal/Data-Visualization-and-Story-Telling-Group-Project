@@ -5,6 +5,16 @@ df = load_data()
 
 st.title("Environmental & Community Health Explorer")
 
+# Hero image — photo by Marek Piwnicki on Unsplash (free to use under the
+# Unsplash License; photographer retains copyright, attribution not required
+# but included here as good practice).
+# Source: https://unsplash.com/photos/WiZOyYqzUss
+st.image(
+    "assets/hero.jpg",
+    caption="Photo by Marek Piwnicki / Unsplash",
+    use_container_width=True,
+)
+
 st.write(
     "This dashboard explores how socioeconomic conditions, air quality, greenhouse gas "
     "emissions, and health outcomes relate to one another across U.S. counties, using "
@@ -53,5 +63,7 @@ st.write(
     "**Note on missing data:** air quality monitoring only covers roughly 1300 counties, "
     "and GHG emissions reporting is sparser in rural counties. Variable pairs that mix "
     "categories can end up with a smaller sample than a single-category view — each page "
-    "shows how many counties are currently plotted."
+    "shows how many counties are currently plotted.\n\n"
+    "**Image credit:** Photo by Marek Piwnicki on Unsplash. "
+    "https://unsplash.com/photos/WiZOyYqzUss"
 )
