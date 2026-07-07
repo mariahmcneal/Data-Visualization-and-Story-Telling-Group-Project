@@ -14,7 +14,7 @@ with img_col:
     st.image(
         "assets/hero.jpg",
         caption="Photo by Marek Piwnicki / Unsplash",
-        width=450,
+        width=550,
     )
 
 st.write(
