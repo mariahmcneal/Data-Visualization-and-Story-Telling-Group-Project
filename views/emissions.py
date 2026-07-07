@@ -241,7 +241,7 @@ st.altair_chart(
 st.caption(
     "Drag a rectangle on the scatter plot to brush-select a group of counties. The "
     "bar chart recalculates the state averages using only that selection. Note that "
-    "AQI monitoring only covers roughly 500 U.S. counties, so this comparison uses a "
+    "AQI monitoring only covers roughly 1300 U.S. counties, so this comparison uses a "
     "smaller sample than the map above."
 )
 
@@ -255,7 +255,8 @@ st.write(
     "emissions favor states with more industry and more people, while per-capita "
     "emissions represents a different set of states carrying an outsized burden "
     "relative to their population. Each bubble is a state; size and color both "
-    "track per-capita emissions. Hover over each bubble to see a state's total and per-capita emissions"
+    "track per-capita emissions. The larger the bubble and the more intense the color, 
+    "the more per-capita emissions. Hover over each bubble to see a state's total and per-capita emissions"
 )
 
 state_summary = (
