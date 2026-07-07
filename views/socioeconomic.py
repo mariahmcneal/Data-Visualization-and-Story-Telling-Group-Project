@@ -106,6 +106,8 @@ with st.sidebar:
         index=0
     )
 
+    states = sorted(df["state_abbr"].unique())
+
     selected_state = st.selectbox(
         "Select State",
         options=states,
