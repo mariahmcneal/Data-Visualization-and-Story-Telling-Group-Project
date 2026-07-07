@@ -143,9 +143,12 @@ selected_row = df[
     df["county_display"] == selected_county
 ].iloc[0]
 
-highlighted_counties = df[
-    df[selected_ses] >= burden_threshold
-]
+df["highlight"] = (
+    (df[selected_ses] >= burden_threshold) &
+    (df[selected_env] >= burden_threshold)
+)
+
+highlighted_counties = df[df["highlight"]]
 
 ses_map = (
     alt.Chart(counties)
@@ -165,7 +168,8 @@ ses_map = (
                 "state_abbr",
                 selected_ses,
                 "FOODINSECU",
-                "HOUSINSECU"
+                "HOUSINSECU",
+                "highlight"
             ]
         )
     )
@@ -186,6 +190,18 @@ ses_map = (
                 domain=[-2,2],
                 reverse=True
             )
+        ),
+        
+        stroke=alt.condition(
+            "datum.highlight == true",
+            alt.value("black"),
+            alt.value("white")
+        ),
+        
+        strokeWidth=alt.condition(
+            "datum.highlight == true",
+            alt.value(1.5),
+            alt.value(0.1)
         ),
 
         tooltip=[
@@ -311,7 +327,7 @@ st.caption(
 
 st.caption(
     f"{len(highlighted_counties)} counties have a "
-    f"{ENV_labels[selected_env]} z-score above {burden_threshold:.1f}."
+    f"{SES_labels[selected_ses]} z-score above {burden_threshold:.1f}."
 )
 
 ses_event = st.altair_chart(
