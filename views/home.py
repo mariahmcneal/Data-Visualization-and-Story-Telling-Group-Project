@@ -12,7 +12,7 @@ st.title("Environmental & Community Health Explorer")
 st.image(
     "assets/hero.jpg",
     caption="Photo by Marek Piwnicki / Unsplash",
-    use_container_width=True,
+    width=650,
 )
 
 st.write(
