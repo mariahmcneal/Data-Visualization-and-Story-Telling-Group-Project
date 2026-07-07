@@ -1,7 +1,6 @@
 import altair as alt
 import pandas as pd
 import streamlit as st
-from vega_datasets import data
 
 from data_utils import (
     SES_VARS,
@@ -10,6 +9,8 @@ from data_utils import (
     state_filter,
     COLOR_BAR,
 )
+
+US_COUNTIES_TOPOJSON_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json"
 
 @st.cache_data
 def load_socioeconomic_data():
@@ -22,6 +23,11 @@ df["county_fips_int"] = (
     df["county_fips_int"]
     .astype(str)
     .str.zfill(5)
+)
+
+counties = alt.topo_feature(
+    US_COUNTIES_TOPOJSON_URL,
+    "counties"
 )
 
 st.title("🏘️ Environmental Burden and Socioeconomic Status (SES)")
@@ -37,10 +43,6 @@ st.markdown(
 # -----------------------------
 # Sidebar dropdowns
 # -----------------------------
-counties = alt.topo_feature(
-    data.us_10m.url,
-    "counties"
-)
 
 SES_labels = {
     "FOODINSECU_z": "Food Insecurity",
