@@ -3,7 +3,7 @@ from data_utils import load_data, VARIABLE_GROUPS
 
 df = load_data()
 
-title_col, img_col = st.columns([1.3, 1])
+title_col, img_col = st.columns([0.8, 1.2])
 with title_col:
     st.title("Environmental & Community Health Explorer")
 with img_col:
