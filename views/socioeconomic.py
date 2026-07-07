@@ -231,11 +231,34 @@ env_map = (
 
     .project(type="albersUsa")
 )
+# Display maps and capture selections
 
-#Dynamic tile
+ses_event = st.altair_chart(
+    ses_map,
+    use_container_width=True,
+    on_select="rerun"
+)
 
-if selection.selection:
-    selected_fips = selection.selection["county_fips_int"][0]
+env_event = st.altair_chart(
+    env_map,
+    use_container_width=True,
+    on_select="rerun"
+)
+
+
+# Dynamic tile
+
+selection = None
+
+if ses_event.selection:
+    selection = ses_event.selection
+
+elif env_event.selection:
+    selection = env_event.selection
+
+
+if selection:
+    selected_fips = selection["county_fips_int"][0]
 
     county = df[
         df["county_fips_int"] == selected_fips
@@ -259,15 +282,3 @@ if selection.selection:
         ENV_labels[selected_env],
         f"{county[selected_env]:.2f}"
     )
-
-st.altair_chart(
-    ses_map,
-    use_container_width=True,
-     on_select="rerun"
-)
-
-st.altair_chart(
-    env_map,
-    use_container_width=True,
-     on_select="rerun"
-)
