@@ -1,5 +1,4 @@
 
-Health · PY
 # ── views/health.py ───────────────────────────────────────────────────────────
 # Owner: Dalis
 # Health and Pollution topic page for the Streamlit multipage dashboard
