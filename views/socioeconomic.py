@@ -3,7 +3,6 @@ import pandas as pd
 import streamlit as st
 
 from data_utils import (
-    load_data,
     SES_VARS,
     VARIABLE_GROUPS,
     linked_scatter_bar,
@@ -12,11 +11,17 @@ from data_utils import (
 )
 
 @st.cache_data
-def load_data():
+def load_socioeconomic_data():
     df = pd.read_csv("eda_env_health_2023.csv")
     return df
-    
-df = load_data()
+
+df = load_socioeconomic_data()
+
+df["county_fips_int"] = (
+    df["county_fips_int"]
+    .astype(str)
+    .str.zfill(5)
+)
 
 st.title("🏘️ Environmental Burden and Socioeconomic Status (SES)")
 st.caption("Owner: Michelle Webber")
@@ -31,6 +36,10 @@ st.markdown(
 # -----------------------------
 # Sidebar dropdowns
 # -----------------------------
+counties = alt.topo_feature(
+    alt.topo_data.us_10m.url,
+    "counties"
+)
 
 SES_labels = {
     "FOODINSECU_z": "Food Insecurity",
