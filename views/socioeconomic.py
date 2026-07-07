@@ -40,30 +40,23 @@ def load_county_map():
 
 counties = load_county_map()
 st.title("🏘️ Environmental Burden and Socioeconomic Status (SES)")
-st.caption("Owner: Michelle Webber")
+st.markdown("**Are regions with higher socioeconomic disadvantage also associated with higher concentrations of air pollutants that pose risks to human health?**")
 
 st.markdown(
     """
-    Environmental burdens are not experienced equally across communities. This dashboard explores environmental justice patterns across U.S. counties by examining how **socioeconomic conditions**, **air quality**, and **greenhouse gas emissions** vary geographically. Interactive visualizations highlight where environmental exposures and social vulnerabilities overlap, providing insight into communities that may face disproportionate environmental challenges.
+    Environmental burdens are not experienced equally across the United States. This page explores how socioeconomic disadvantage overlaps with air pollution and greenhouse gas emissions across U.S. counties, highlighting where environmental exposures and social vulnerabilities are concentrated.
     """
 )
 
-st.info(
-    """
-    **Note:** Values are Z-scores which standardize measures so counties can 
-    be compared on the same scale. A z-score of 0 represents the national average. 
-    Positive values indicate counties with higher-than-average values for the 
-    selected measure, while negative values indicate lower-than-average values.
-    
-    """
-)
+st.divider()
+
 # -----------------------------
 # Sidebar dropdowns
 # -----------------------------
 
 SES_labels = {
-    "FOODINSECU_z": "Food Insecurity",
     "HOUSINSECU_z": "Housing Insecurity",
+    "FOODINSECU_z": "Food Insecurity",
     "FOODSTAMP_z": "Food Assistance Reliance",
     "ACCESS2_z": "Healthcare Access Barriers",
     "SHUTUTILITY_z": "Utility Shutoff Risk",
@@ -71,7 +64,10 @@ SES_labels = {
     "EMOTIONSPT_z": "Emotional Support Barriers"
 }
 
+
 ENV_labels = {
+    "num_facilities_z": "Number of Emitting Facilities",
+    "emissions_per_capita_z": "Emissions per Capita",
     "pct_unhealthy_days_z": "% Unhealthy Air Quality Days",
     "Max AQI_z": "Maximum AQI",
     "90th Percentile AQI_z": "High AQI (90th Percentile)",
@@ -79,14 +75,12 @@ ENV_labels = {
     "total_emissions_z": "Total Emissions",
     "co2_emissions_z": "CO₂ Emissions",
     "ch4_emissions_z": "Methane Emissions",
-    "n2o_emissions_z": "Nitrous Oxide Emissions",
-    "num_facilities_z": "Number of Emitting Facilities",
-    "emissions_per_capita_z": "Emissions per Capita"
+    "n2o_emissions_z": "Nitrous Oxide Emissions"
 }
 
 county_selection = alt.selection_point(
-    fields=["county_fips_int"],
-    empty=False
+    fields=["id"],
+    empty=True
 )
 
 with st.sidebar:
@@ -111,7 +105,7 @@ with st.sidebar:
     selected_state = st.selectbox(
         "Select State",
         options=states,
-        index=states.index("MA") if "MA" in states else 0
+        index=states.index("LA") if "LA" in states else 0
     )
 
     county_options = (
@@ -123,12 +117,48 @@ with st.sidebar:
         "Select County:",
         options=county_options["county_display"],
         index=(
-            list(county_options["county_display"]).index("Suffolk County, MA")
-            if "Suffolk County, MA" in list(county_options["county_display"])
+            list(county_options["county_display"]).index("East Carroll County, LA")
+            if "East Carroll County, LA" in list(county_options["county_display"])
             else 0
         )
     )  
-    
+st.markdown(f"### Socioeconomic Vulnerability: {SES_labels[selected_ses]}")
+
+ # Summary metrics for selected SES measure
+ses_data = df[selected_ses].dropna()
+
+avg_ses = df[selected_ses.replace("_z", "")].mean()
+
+highest_county = (
+    df.dropna(subset=[selected_ses])
+    .sort_values(selected_ses, ascending=False)
+    .iloc[0]
+)
+
+lowest_county = (
+    df.dropna(subset=[selected_ses])
+    .sort_values(selected_ses, ascending=True)
+    .iloc[0]
+)
+
+m1, m2, m3 = st.columns(3)
+
+m1.metric(
+    "Average score",
+    f"{avg_ses:.1f}%"
+)
+
+m2.metric(
+    "Highest vulnerability county",
+    f"{highest_county['county_name']}, {highest_county['state_abbr']}",
+    f"{highest_county[selected_ses]:.2f} z-score"
+)
+
+m3.metric(
+    "Counties analyzed",
+    f"{ses_data.count():,}"
+)
+   
       
 # -----------------------------
 # SES MAP
@@ -202,9 +232,8 @@ ses_map = (
     )
 
     .properties(
-        width=450,
-        height=500,
-        title=f"Socioeconomic Vulnerability: {SES_labels[selected_ses]}"
+        width=700,
+        height=460
     )
 
     .project(type="albersUsa")
@@ -267,15 +296,45 @@ env_map = (
     )
 
     .properties(
-        width=450,
-        height=500,
-        title=f"Environmental Burden: {ENV_labels[selected_env]}"
+        width=700,
+        height=460
     )
 
     .project(type="albersUsa")
 )
 
-st.divider()
+# -----------------------------
+# Display maps + explanation
+# -----------------------------
+
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    map_event = st.altair_chart(
+        ses_map,
+        use_container_width=False,
+        on_select="rerun"
+    )
+
+with col2:
+    st.info(
+        """
+        **How to read this map**
+
+        Values are Z-scores, which standardize measures so counties can be 
+        compared on the same scale.
+
+        - **0** = national average  
+        - **Positive values** = higher-than-average vulnerability  
+        - **Negative values** = lower-than-average vulnerability  
+
+        Higher values indicate counties with greater levels of the 
+        selected measure.
+        """
+    )
+
+
+
 
 st.subheader("Selected County Profile")
 
@@ -291,25 +350,11 @@ col2.metric(
     f"{selected_row[selected_ses]:.2f}"
 )
 
+value = selected_row[selected_env]
+
 col3.metric(
     f"{ENV_labels[selected_env]} (z-score)",
-    f"{selected_row[selected_env]:.2f}"
+    "Not reported" if pd.isna(value) else f"{value:.2f}"
+)
 )
 
-# Display maps and capture selections
-st.caption(
-    "Map colors represent relative county values compared with all U.S. counties."
-)
-
-
-ses_event = st.altair_chart(
-    ses_map,
-    use_container_width=True,
-    on_select="rerun"
-)
-
-env_event = st.altair_chart(
-    env_map,
-    use_container_width=True,
-    on_select="rerun"
-)
