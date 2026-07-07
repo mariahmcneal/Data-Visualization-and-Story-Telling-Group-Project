@@ -22,7 +22,7 @@ df = load_socioeconomic_data()
 df = df.sort_values(["state_abbr", "county_name"])
 
 df["county_display"] = (
-    df["county_name"] + "County, " + df["state_abbr"]
+    df["county_name"] + " County, " + df["state_abbr"]
 )
 
 df["county_fips_int"] = (
@@ -127,13 +127,25 @@ with st.sidebar:
             if "Suffolk County, MA" in list(county_options["county_display"])
             else 0
         )
-    )     
+    )  
+    burden_threshold = st.slider(
+        "Highlight counties with SES Indicator z-score above:",
+        min_value=-2.0,
+        max_value=3.0,
+        value=1.0,
+        step=0.1
+    )
+      
 # -----------------------------
 # SES MAP
 # -----------------------------
 selected_row = df[
     df["county_display"] == selected_county
 ].iloc[0]
+
+highlighted_counties = df[
+    df[selected_ses] >= burden_threshold
+]
 
 ses_map = (
     alt.Chart(counties)
@@ -295,6 +307,11 @@ col3.metric(
 # Display maps and capture selections
 st.caption(
     "Map colors represent relative county values compared with all U.S. counties."
+)
+
+st.caption(
+    f"{len(highlighted_counties)} counties have a "
+    f"{ENV_labels[selected_env]} z-score above {burden_threshold:.1f}."
 )
 
 ses_event = st.altair_chart(
