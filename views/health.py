@@ -129,7 +129,11 @@ def emission_quartile_bar(df_src, y_col, y_label, color_scheme="blues"):
         alt.Chart(quartile_means)
         .mark_bar()
         .encode(
-            x=alt.X("emission_quartile:N", title="Emissions Per Capita Quartile", sort=None),
+            x=alt.X(
+                "emission_quartile:N",
+                title="Emissions Per Capita Quartile",
+                sort=["Q1 (Lowest)", "Q2", "Q3", "Q4 (Highest)"]
+            ),
             y=alt.Y("mean_val:Q", title=f"Mean {y_label} (%)"),
             color=alt.Color(
                 "mean_val:Q",
@@ -169,7 +173,11 @@ def emission_quartile_box(df_src, y_col, y_label):
         alt.Chart(src)
         .mark_boxplot(extent="min-max", size=32)
         .encode(
-            x=alt.X("emission_quartile:N", title="Emissions Per Capita Quartile", sort=None),
+            x=alt.X(
+                "emission_quartile:N",
+                title="Emissions Per Capita Quartile",
+                sort=["Q1 (Lowest)", "Q2", "Q3", "Q4 (Highest)"]
+            ),
             y=alt.Y(f"{y_col}:Q", title=f"{y_label} (%)"),
             color=alt.Color(
                 "emission_quartile:N",
