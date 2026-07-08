@@ -349,15 +349,12 @@ hotspot_bar = (
     .encode(
         x=alt.X(
             "combined_score:Q",
-            title=[
-        "Top 10 Environmental + Socioeconomic Hotspots",
-        "Click on bars to highlight counties in the scatter plot"
-    ]
+            title= "Combined SES + Environmental Burden Score"
         ),
         y=alt.Y(
             "county_label:N",
             sort="-x",
-            title=""
+            title="County"
         ),
         color=alt.condition(
             click,
@@ -390,8 +387,11 @@ hotspot_bar = (
     )
     .properties(
         height=350,
-        title="Top 10 Environmental + Socioeconomic Hotspots"
-    )
+        title=[
+            "Top 10 Environmental + Socioeconomic Hotspots",
+            "Click on bars to highlight counties in the scatter plot"
+        ]
+    )  
 )
 dashboard = hotspot_with_rules & hotspot_bar
 st.altair_chart(
