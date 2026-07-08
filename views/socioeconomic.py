@@ -238,70 +238,7 @@ ses_map = (
 
     .project(type="albersUsa")
 )
-env_map = (
-    alt.Chart(counties)
-    .mark_geoshape(
-        stroke="white",
-        strokeWidth=0.1
-    )
 
-    .transform_lookup(
-        lookup="id",
-        from_=alt.LookupData(
-            df,
-            "county_fips_int",
-            [
-                "county_fips_int",
-                "county_name",
-                "state_abbr",
-                selected_env,
-                "pct_unhealthy_days",
-                "num_facilities"
-            ]
-        )
-    )
-
-    .transform_calculate(
-        ENV_value=f"datum['{selected_env}']"
-    )
-
-    .add_params(county_selection)
-
-    .encode(
-
-        color=alt.Color(
-            "ENV_value:Q",
-            title="Environmental z-score",
-            scale=alt.Scale(
-                scheme="redyellowgreen",
-                domain=[-2,2],
-                reverse=True
-            )
-        ),
-
-        tooltip=[
-            alt.Tooltip("county_name:N", title="County"),
-            alt.Tooltip("state_abbr:N", title="State"),
-            alt.Tooltip(
-                "ENV_value:Q",
-                title="Environmental z-score",
-                format=".2f"
-            ),
-            alt.Tooltip(
-                "num_facilities:Q",
-                title="Facilities",
-                format=".0f"
-            )
-        ]
-    )
-
-    .properties(
-        width=700,
-        height=460
-    )
-
-    .project(type="albersUsa")
-)
 
 # -----------------------------
 # Display maps + explanation
