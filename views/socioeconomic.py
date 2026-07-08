@@ -100,28 +100,8 @@ with st.sidebar:
         index=0
     )
 
-    states = sorted(df["state_abbr"].unique())
-
-    selected_state = st.selectbox(
-        "Select State",
-        options=states,
-        index=states.index("LA") if "LA" in states else 0
-    )
-
-    county_options = (
-        df[df["state_abbr"] == selected_state]
-        .sort_values("county_name")
-    )
-
-    selected_county = st.selectbox(
-        "Select County:",
-        options=county_options["county_display"],
-        index=(
-            list(county_options["county_display"]).index("East Carroll County, LA")
-            if "East Carroll County, LA" in list(county_options["county_display"])
-            else 0
-        )
-    )  
+    
+ 
 st.markdown(f"### Socioeconomic Vulnerability: {SES_labels[selected_ses]}")
 
  # Summary metrics for selected SES measure
@@ -149,24 +129,22 @@ m1.metric(
 )
 
 m2.metric(
-    "Highest vulnerability county",
-    f"{highest_county['county_name']}, {highest_county['state_abbr']}",
-    f"{highest_county[selected_ses]:.2f} z-score"
-)
-
-m3.metric(
     "Counties analyzed",
     f"{ses_data.count():,}"
 )
-   
-      
+
+df["num_facilities_z_display"] = df["num_facilities_z"].apply(
+    lambda x: "Not reported" if pd.isna(x) or str(x).lower() == "nan" else f"{float(x):.1f}"
+)
+
+df["emissions_per_capita_z_display"] = df["emissions_per_capita_z"].apply(
+    lambda x: "Not reported" if pd.isna(x) or str(x).lower() == "nan" else f"{float(x):.1f}"
+)   
 # -----------------------------
 # SES MAP
 # -----------------------------
-selected_row = df[
-    df["county_display"] == selected_county
-].iloc[0]
 
+df["county_fips_int"] = df["county_fips_int"].astype(str)
 
 ses_map = (
     alt.Chart(counties)
@@ -186,7 +164,9 @@ ses_map = (
                 "state_abbr",
                 selected_ses,
                 "FOODINSECU",
-                "HOUSINSECU"
+                "HOUSINSECU", 
+                "num_facilities_z_display",
+                "emissions_per_capita_z_display"
             ]
         )
     )
@@ -195,41 +175,38 @@ ses_map = (
         SES_value=f"datum['{selected_ses}']"
     )
 
-    .add_params(county_selection)
 
     .encode(
-
-        color=alt.Color(
-            "SES_value:Q",
-            title="SES z-score",
-            scale=alt.Scale(
-                scheme="redyellowgreen",
-                domain=[-2,2],
-                reverse=True
-            )
-        ),
+    color=alt.Color(
+        "SES_value:Q",
+        title="SES z-score",
+        scale=alt.Scale(
+            scheme="redyellowgreen",
+            domain=[-2,2],
+            reverse=True
+        )
+    ),
         
-
         tooltip=[
             alt.Tooltip("county_name:N", title="County"),
             alt.Tooltip("state_abbr:N", title="State"),
+            alt.Tooltip("county_fips_int:N", title="FIPS"),
             alt.Tooltip(
                 "SES_value:Q",
                 title="SES z-score",
-                format=".2f"
-            ),
-            alt.Tooltip(
-                "HOUSINSECU:Q",
-                title="Housing insecurity (%)",
                 format=".1f"
             ),
             alt.Tooltip(
-                "FOODINSECU:Q",
-                title="Food insecurity (%)",
-                format=".1f"
+                "num_facilities_z_display:N",
+                title="Number of facilities z-score"
+            ),
+            alt.Tooltip(
+                "emissions_per_capita_z_display:N",
+                title="Emissions per capita z-score"
             )
         ]
     )
+
 
     .properties(
         width=700,
@@ -238,70 +215,73 @@ ses_map = (
 
     .project(type="albersUsa")
 )
-env_map = (
-    alt.Chart(counties)
-    .mark_geoshape(
-        stroke="white",
-        strokeWidth=0.1
-    )
 
-    .transform_lookup(
-        lookup="id",
-        from_=alt.LookupData(
-            df,
-            "county_fips_int",
-            [
-                "county_fips_int",
-                "county_name",
-                "state_abbr",
-                selected_env,
-                "pct_unhealthy_days",
-                "num_facilities"
-            ]
-        )
-    )
 
-    .transform_calculate(
-        ENV_value=f"datum['{selected_env}']"
-    )
 
-    .add_params(county_selection)
+scatter_df = df[
+    [
+        "county_fips_int",
+        "county_name",
+        "state_abbr",
+        selected_ses,
+        selected_env,
+        "num_facilities"
+    ]
+].dropna().copy()
 
+
+hotspot_chart = (
+    alt.Chart(scatter_df)
+    .mark_circle(size=80)
     .encode(
-
-        color=alt.Color(
-            "ENV_value:Q",
-            title="Environmental z-score",
-            scale=alt.Scale(
-                scheme="redyellowgreen",
-                domain=[-2,2],
-                reverse=True
-            )
+        color=alt.condition(
+            (alt.datum[selected_ses] > 0) &
+            (alt.datum[selected_env] > 0),
+            alt.value("maroon"),
+            alt.value("lightgray")
         ),
-
+        
+        x=alt.X(
+            f"{selected_env}:Q",
+            title=f"{ENV_labels.get(selected_env, selected_env)} (z-score)"
+        ),
+        y=alt.Y(
+            f"{selected_ses}:Q",
+            title=f"{SES_labels.get(selected_ses, selected_ses)} (z-score)"
+        ),
         tooltip=[
             alt.Tooltip("county_name:N", title="County"),
             alt.Tooltip("state_abbr:N", title="State"),
             alt.Tooltip(
-                "ENV_value:Q",
-                title="Environmental z-score",
+                f"{selected_ses}:Q",
+                title=SES_labels.get(selected_ses, selected_ses),
                 format=".2f"
             ),
             alt.Tooltip(
-                "num_facilities:Q",
-                title="Facilities",
-                format=".0f"
-            )
+                f"{selected_env}:Q",
+                title=ENV_labels.get(selected_env, selected_env),
+                format=".2f"
+            ),
+            alt.Tooltip("num_facilities:Q", title="Facilities")
         ]
     )
-
     .properties(
-        width=700,
-        height=460
+        height=450,
+        title="Counties with High Socioeconomic Vulnerability and Environmental Burden (Top-Right Quadrant)"
     )
-
-    .project(type="albersUsa")
 )
+
+x_rule = alt.Chart(
+    pd.DataFrame({"x":[0]})
+).mark_rule().encode(x="x")
+
+y_rule = alt.Chart(
+    pd.DataFrame({"y":[0]})
+).mark_rule().encode(y="y")
+
+hotspot_with_rules = hotspot_chart + x_rule + y_rule
+
+
 
 # -----------------------------
 # Display maps + explanation
@@ -310,10 +290,9 @@ env_map = (
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    map_event = st.altair_chart(
+    st.altair_chart(
         ses_map,
-        use_container_width=True,
-        on_select="rerun"
+        use_container_width=True
     )
 
 with col2:
@@ -332,29 +311,94 @@ with col2:
         selected measure.
         """
     )
+st.altair_chart(
+    hotspot_with_rules,
+    use_container_width=True
+)
 
+st.divider()
 
+st.subheader("Explore a County")
 
-
-st.subheader("Selected County Profile")
+states = sorted(df["state_abbr"].unique())
 
 col1, col2, col3 = st.columns(3)
 
-col1.metric(
-    "Selected County",
-    selected_county
+with col1:
+    selected_state = st.selectbox(
+        "Select State",
+        options=states,
+        index=states.index("MA") if "MA" in states else 0
+    )
+county_options = (
+    df[df["state_abbr"] == selected_state]
+    .sort_values("county_name")
 )
 
-col2.metric(
-    f"{SES_labels[selected_ses]} (z-score)",
+with col2:
+    county_list = county_options["county_display"].tolist()
+
+    selected_county = st.selectbox(
+        "Select County",
+        options=county_list,
+        index=(
+            county_list.index("Suffolk County, MA")
+            if "Suffolk County, MA" in county_list
+            else 0
+        )
+    )
+selected_row = df[
+    df["county_display"] == selected_county
+].iloc[0]
+
+m1, m2, m3 = st.columns(3)
+
+m1.metric(
+    f"Socioeconomic: {SES_labels[selected_ses]}",
     f"{selected_row[selected_ses]:.2f}"
 )
-
-value = selected_row[selected_env]
-
-col3.metric(
-    f"{ENV_labels[selected_env]} (z-score)",
-    "Not reported" if pd.isna(value) else f"{value:.2f}"
+m2.metric(
+    f"Environmental: {ENV_labels[selected_env]}",
+    "Not reported" if pd.isna(selected_row[selected_env]) else f"{selected_row[selected_env]:.2f}"
 )
 
+st.divider()
 
+st.subheader("Key Statistical Findings")
+
+st.info(
+"""
+**Environmental Burden and Socioeconomic Vulnerability**
+
+The number of industrial facilities showed the strongest statistically significant relationships 
+with socioeconomic vulnerability measures (p-value < 0.01).
+
+**Strongest correlations:**
+
+• Lack of Emotional Support: r = 0.18  
+• Loneliness: r = 0.14  
+• Housing Insecurity: r = 0.10  
+• Healthcare Access Barriers: r = 0.08  
+
+These results indicate a **positive association**: counties with more facilities 
+tended to have slightly higher levels of socioeconomic vulnerability.
+
+Use the map and county selection tools to identify counties where high socioeconomic vulnerability overlaps with higher environmental burden.
+"""
+)
+
+with st.expander("View underlying data (filtered)"):
+    display_cols = [
+        "county_name",
+        "state_abbr",
+        "county_fips_int",
+    ] + list(SES_labels.keys()) + list(ENV_labels.keys())
+
+    display_df = df[display_cols].rename(
+        columns={**SES_labels, **ENV_labels}
+    )
+
+    st.dataframe(
+        display_df.sort_values("county_name"),
+        use_container_width=True,
+    )
