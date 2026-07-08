@@ -307,12 +307,12 @@ env_map = (
 # Display maps + explanation
 # -----------------------------
 
-col1, col2 = st.columns([3, 1])
+col1, col2 = st.columns([2, 1])
 
 with col1:
     map_event = st.altair_chart(
         ses_map,
-        use_container_width=False,
+        use_container_width=True,
         on_select="rerun"
     )
 
