@@ -388,7 +388,7 @@ hotspot_bar = (
     .properties(
         height=350,
         title=[
-            "Top 10 Environmental + Socioeconomic Hotspots",
+            "Top 15 Environmental + Socioeconomic Hotspots",
             "Click on bars to highlight counties in the scatter plot"
         ]
     )  
