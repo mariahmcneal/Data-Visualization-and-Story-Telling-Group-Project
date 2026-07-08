@@ -229,14 +229,17 @@ scatter_df = df[
     ]
 ].dropna().copy()
 
+click = alt.selection_point(
+    fields=["county_name"],
+    empty=True
+)
 
 hotspot_chart = (
     alt.Chart(scatter_df)
     .mark_circle(size=80)
     .encode(
         color=alt.condition(
-            (alt.datum[selected_ses] > 0) &
-            (alt.datum[selected_env] > 0),
+            click,
             alt.value("maroon"),
             alt.value("lightgray")
         ),
@@ -311,56 +314,92 @@ with col2:
         selected measure.
         """
     )
-st.altair_chart(
-    hotspot_with_rules,
-    use_container_width=True
-)
+
 
 st.divider()
 
-st.subheader("Explore a County")
 
-states = sorted(df["state_abbr"].unique())
+hotspots = scatter_df[
+    (scatter_df[selected_ses] > 0) &
+    (scatter_df[selected_env] > 0)
+].copy()
 
-col1, col2, col3 = st.columns(3)
+hotspots["combined_score"] = (
+    hotspots[selected_ses] +
+    hotspots[selected_env]
+)
 
-with col1:
-    selected_state = st.selectbox(
-        "Select State",
-        options=states,
-        index=states.index("MA") if "MA" in states else 0
+hotspots = (
+    hotspots
+    .sort_values(
+        "combined_score",
+        ascending=False
     )
-county_options = (
-    df[df["state_abbr"] == selected_state]
-    .sort_values("county_name")
+    .head(15)
 )
 
-with col2:
-    county_list = county_options["county_display"].tolist()
+hotspots["county_label"] = (
+    hotspots["county_name"] + ", " + hotspots["state_abbr"]
+)
 
-    selected_county = st.selectbox(
-        "Select County",
-        options=county_list,
-        index=(
-            county_list.index("Suffolk County, MA")
-            if "Suffolk County, MA" in county_list
-            else 0
-        )
+hotspot_bar = (
+    alt.Chart(hotspots)
+    .mark_bar()
+    .add_params(click)
+    .encode(
+        x=alt.X(
+            "combined_score:Q",
+            title=[
+        "Top 10 Environmental + Socioeconomic Hotspots",
+        "Click on bars to highlight counties in the scatter plot"
+    ]
+        ),
+        y=alt.Y(
+            "county_label:N",
+            sort="-x",
+            title=""
+        ),
+        color=alt.condition(
+            click,
+            alt.value("maroon"),
+            alt.value("lightgray")
+        ),
+        tooltip=[
+            alt.Tooltip("county_name:N", title="County"),
+            alt.Tooltip("state_abbr:N", title="State"),
+            alt.Tooltip(
+                "combined_score:Q",
+                title="Combined Score",
+                format=".2f"
+            ),
+            alt.Tooltip(
+                f"{selected_ses}:Q",
+                title=SES_labels[selected_ses],
+                format=".2f"
+            ),
+            alt.Tooltip(
+                f"{selected_env}:Q",
+                title=ENV_labels[selected_env],
+                format=".2f"
+            ),
+            alt.Tooltip(
+                "num_facilities:Q",
+                title="Number of Facilities"
+            )
+        ]
     )
-selected_row = df[
-    df["county_display"] == selected_county
-].iloc[0]
-
-m1, m2, m3 = st.columns(3)
-
-m1.metric(
-    f"Socioeconomic: {SES_labels[selected_ses]}",
-    f"{selected_row[selected_ses]:.2f}"
+    .properties(
+        height=350,
+        title="Top 10 Environmental + Socioeconomic Hotspots"
+    )
 )
-m2.metric(
-    f"Environmental: {ENV_labels[selected_env]}",
-    "Not reported" if pd.isna(selected_row[selected_env]) else f"{selected_row[selected_env]:.2f}"
+dashboard = hotspot_with_rules & hotspot_bar
+st.altair_chart(
+    dashboard,
+    use_container_width=True
 )
+
+
 
 st.divider()
 
